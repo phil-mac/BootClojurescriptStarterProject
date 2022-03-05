@@ -1,4 +1,4 @@
-// Compiled by ClojureScript 1.7.228 {}
+// Compiled by ClojureScript 1.9.473 {}
 goog.provide('adzerk.boot_reload.websocket');
 goog.require('cljs.core');
 goog.require('clojure.browser.net');
@@ -14,14 +14,14 @@ adzerk.boot_reload.websocket.open_QMARK_ = (function adzerk$boot_reload$websocke
 if((!((this$ == null))) && (!((this$.adzerk$boot_reload$websocket$IWebSocket$open_QMARK_$arity$1 == null)))){
 return this$.adzerk$boot_reload$websocket$IWebSocket$open_QMARK_$arity$1(this$);
 } else {
-var x__7077__auto__ = (((this$ == null))?null:this$);
-var m__7078__auto__ = (adzerk.boot_reload.websocket.open_QMARK_[goog.typeOf(x__7077__auto__)]);
-if(!((m__7078__auto__ == null))){
-return m__7078__auto__.call(null,this$);
+var x__7779__auto__ = (((this$ == null))?null:this$);
+var m__7780__auto__ = (adzerk.boot_reload.websocket.open_QMARK_[goog.typeOf(x__7779__auto__)]);
+if(!((m__7780__auto__ == null))){
+return m__7780__auto__.call(null,this$);
 } else {
-var m__7078__auto____$1 = (adzerk.boot_reload.websocket.open_QMARK_["_"]);
-if(!((m__7078__auto____$1 == null))){
-return m__7078__auto____$1.call(null,this$);
+var m__7780__auto____$1 = (adzerk.boot_reload.websocket.open_QMARK_["_"]);
+if(!((m__7780__auto____$1 == null))){
+return m__7780__auto____$1.call(null,this$);
 } else {
 throw cljs.core.missing_protocol.call(null,"IWebSocket.open?",this$);
 }
@@ -30,23 +30,23 @@ throw cljs.core.missing_protocol.call(null,"IWebSocket.open?",this$);
 });
 
 adzerk.boot_reload.websocket.websocket_connection = (function adzerk$boot_reload$websocket$websocket_connection(var_args){
-var args7815 = [];
-var len__7480__auto___7818 = arguments.length;
-var i__7481__auto___7819 = (0);
+var args8732 = [];
+var len__8224__auto___8735 = arguments.length;
+var i__8225__auto___8736 = (0);
 while(true){
-if((i__7481__auto___7819 < len__7480__auto___7818)){
-args7815.push((arguments[i__7481__auto___7819]));
+if((i__8225__auto___8736 < len__8224__auto___8735)){
+args8732.push((arguments[i__8225__auto___8736]));
 
-var G__7820 = (i__7481__auto___7819 + (1));
-i__7481__auto___7819 = G__7820;
+var G__8737 = (i__8225__auto___8736 + (1));
+i__8225__auto___8736 = G__8737;
 continue;
 } else {
 }
 break;
 }
 
-var G__7817 = args7815.length;
-switch (G__7817) {
+var G__8734 = args8732.length;
+switch (G__8734) {
 case 0:
 return adzerk.boot_reload.websocket.websocket_connection.cljs$core$IFn$_invoke$arity$0();
 
@@ -60,7 +60,7 @@ return adzerk.boot_reload.websocket.websocket_connection.cljs$core$IFn$_invoke$a
 
 break;
 default:
-throw (new Error([cljs.core.str("Invalid arity: "),cljs.core.str(args7815.length)].join('')));
+throw (new Error([cljs.core.str.cljs$core$IFn$_invoke$arity$1("Invalid arity: "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(args8732.length)].join('')));
 
 }
 });
@@ -78,14 +78,15 @@ return (new goog.net.WebSocket(auto_reconnect_QMARK_,next_reconnect_fn));
 });
 
 adzerk.boot_reload.websocket.websocket_connection.cljs$lang$maxFixedArity = 2;
-goog.net.WebSocket.prototype.adzerk$boot_reload$websocket$IWebSocket$ = true;
+
+goog.net.WebSocket.prototype.adzerk$boot_reload$websocket$IWebSocket$ = cljs.core.PROTOCOL_SENTINEL;
 
 goog.net.WebSocket.prototype.adzerk$boot_reload$websocket$IWebSocket$open_QMARK_$arity$1 = (function (this$){
 var this$__$1 = this;
 return this$__$1.isOpen(cljs.core.List.EMPTY);
 });
 
-goog.net.WebSocket.prototype.clojure$browser$net$IConnection$ = true;
+goog.net.WebSocket.prototype.clojure$browser$net$IConnection$ = cljs.core.PROTOCOL_SENTINEL;
 
 goog.net.WebSocket.prototype.clojure$browser$net$IConnection$connect$arity$2 = (function (this$,url){
 var this$__$1 = this;
@@ -111,15 +112,15 @@ var this$__$1 = this;
 return this$__$1.close(cljs.core.List.EMPTY);
 });
 
-goog.net.WebSocket.prototype.clojure$browser$event$IEventType$ = true;
+goog.net.WebSocket.prototype.clojure$browser$event$IEventType$ = cljs.core.PROTOCOL_SENTINEL;
 
 goog.net.WebSocket.prototype.clojure$browser$event$IEventType$event_types$arity$1 = (function (this$){
 var this$__$1 = this;
 return cljs.core.into.call(null,cljs.core.PersistentArrayMap.EMPTY,cljs.core.map.call(null,((function (this$__$1){
-return (function (p__7822){
-var vec__7823 = p__7822;
-var k = cljs.core.nth.call(null,vec__7823,(0),null);
-var v = cljs.core.nth.call(null,vec__7823,(1),null);
+return (function (p__8739){
+var vec__8740 = p__8739;
+var k = cljs.core.nth.call(null,vec__8740,(0),null);
+var v = cljs.core.nth.call(null,vec__8740,(1),null);
 return new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [cljs.core.keyword.call(null,k.toLowerCase()),v], null);
 });})(this$__$1))
 ,cljs.core.merge.call(null,cljs.core.js__GT_clj.call(null,goog.net.WebSocket.EventType))));

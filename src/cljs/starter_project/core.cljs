@@ -1,8 +1,8 @@
-(ns modern.core)
+(ns starter-project.core)
 
 (enable-console-print!)
 
-(println "Hello, World!")
+(println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
   (do

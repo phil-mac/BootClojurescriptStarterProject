@@ -1,4 +1,4 @@
-// Compiled by ClojureScript 1.7.228 {}
+// Compiled by ClojureScript 1.9.473 {}
 goog.provide('adzerk.boot_reload.connection');
 goog.require('cljs.core');
 goog.require('clojure.browser.net');
@@ -7,9 +7,9 @@ adzerk.boot_reload.connection.alive_QMARK_ = (function adzerk$boot_reload$connec
 return !((cljs.core.deref.call(null,adzerk.boot_reload.connection.ws_conn) == null));
 });
 adzerk.boot_reload.connection.send_message_BANG_ = (function adzerk$boot_reload$connection$send_message_BANG_(message){
-var temp__4425__auto__ = cljs.core.deref.call(null,adzerk.boot_reload.connection.ws_conn);
-if(cljs.core.truth_(temp__4425__auto__)){
-var conn = temp__4425__auto__;
+var temp__4657__auto__ = cljs.core.deref.call(null,adzerk.boot_reload.connection.ws_conn);
+if(cljs.core.truth_(temp__4657__auto__)){
+var conn = temp__4657__auto__;
 return clojure.browser.net.transmit.call(null,conn,cljs.core.pr_str.call(null,message));
 } else {
 return null;

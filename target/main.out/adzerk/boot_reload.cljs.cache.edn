@@ -1,2 +1,1 @@
-;; Analyzed by ClojureScript 1.7.228
-{:name adzerk.boot-reload, :doc nil, :excludes #{}, :use-macros nil, :require-macros nil, :uses nil, :requires {client adzerk.boot-reload.client, adzerk.boot-reload.client adzerk.boot-reload.client}, :imports nil, :cljs.analyzer/constants {:seen #{:ws-host :asset-host :on-jsload}, :order [:ws-host :asset-host :on-jsload]}}
+{:rename-macros {}, :renames {}, :use-macros {}, :excludes #{}, :name adzerk.boot-reload, :imports nil, :requires {client adzerk.boot-reload.client, adzerk.boot-reload.client adzerk.boot-reload.client}, :uses nil, :require-macros nil, :cljs.analyzer/constants {:seen #{:ws-host :asset-host :on-jsload}, :order [:ws-host :asset-host :on-jsload]}, :doc nil}

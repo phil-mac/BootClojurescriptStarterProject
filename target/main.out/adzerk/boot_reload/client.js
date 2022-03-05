@@ -1,15 +1,15 @@
-// Compiled by ClojureScript 1.7.228 {}
+// Compiled by ClojureScript 1.9.473 {}
 goog.provide('adzerk.boot_reload.client');
 goog.require('cljs.core');
-goog.require('adzerk.boot_reload.connection');
-goog.require('adzerk.boot_reload.reload');
-goog.require('goog.Uri');
-goog.require('adzerk.boot_reload.display');
-goog.require('goog.net.jsloader');
 goog.require('adzerk.boot_reload.websocket');
+goog.require('adzerk.boot_reload.reload');
+goog.require('adzerk.boot_reload.display');
+goog.require('adzerk.boot_reload.connection');
 goog.require('clojure.browser.net');
 goog.require('clojure.browser.event');
 goog.require('cljs.reader');
+goog.require('goog.net.jsloader');
+goog.require('goog.Uri');
 adzerk.boot_reload.client.patch_goog_base_BANG_ = (function adzerk$boot_reload$client$patch_goog_base_BANG_(){
 goog.provide = goog.exportPath_;
 
@@ -24,10 +24,13 @@ return null;
 adzerk.boot_reload.client.resolve_url = (function adzerk$boot_reload$client$resolve_url(url,ws_host){
 var passed_uri = (new goog.Uri(url));
 var protocol = passed_uri.getScheme();
-var hostname = (function (){var G__7942 = window;
-var G__7942__$1 = (((G__7942 == null))?null:G__7942.location);
-var G__7942__$2 = (((G__7942__$1 == null))?null:G__7942__$1.hostname);
-return G__7942__$2;
+var hostname = (function (){var G__8746 = window;
+var G__8746__$1 = (((G__8746 == null))?null:G__8746.location);
+if((G__8746__$1 == null)){
+return null;
+} else {
+return G__8746__$1.hostname;
+}
 })();
 var host = (cljs.core.truth_(ws_host)?ws_host:((cljs.core.seq.call(null,hostname))?hostname:(function (){
 console.warn("Both :ws-host and window.location.hostname are empty, using localhost as default.","This might happen if you are accessing the files directly instead of over http.","You should probably set :ws-host manually.");
@@ -37,26 +40,26 @@ return "localhost";
 
 ));
 var port = passed_uri.getPort();
-return [cljs.core.str(protocol),cljs.core.str("://"),cljs.core.str(host),cljs.core.str(":"),cljs.core.str(port)].join('');
+return [cljs.core.str.cljs$core$IFn$_invoke$arity$1(protocol),cljs.core.str.cljs$core$IFn$_invoke$arity$1("://"),cljs.core.str.cljs$core$IFn$_invoke$arity$1(host),cljs.core.str.cljs$core$IFn$_invoke$arity$1(":"),cljs.core.str.cljs$core$IFn$_invoke$arity$1(port)].join('');
 });
 if(typeof adzerk.boot_reload.client.handle !== 'undefined'){
 } else {
-adzerk.boot_reload.client.handle = (function (){var method_table__7335__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
-var prefer_table__7336__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
-var method_cache__7337__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
-var cached_hierarchy__7338__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
-var hierarchy__7339__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",-1053470341),cljs.core.get_global_hierarchy.call(null));
-return (new cljs.core.MultiFn(cljs.core.symbol.call(null,"adzerk.boot-reload.client","handle"),((function (method_table__7335__auto__,prefer_table__7336__auto__,method_cache__7337__auto__,cached_hierarchy__7338__auto__,hierarchy__7339__auto__){
+adzerk.boot_reload.client.handle = (function (){var method_table__8044__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
+var prefer_table__8045__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
+var method_cache__8046__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
+var cached_hierarchy__8047__auto__ = cljs.core.atom.call(null,cljs.core.PersistentArrayMap.EMPTY);
+var hierarchy__8048__auto__ = cljs.core.get.call(null,cljs.core.PersistentArrayMap.EMPTY,new cljs.core.Keyword(null,"hierarchy","hierarchy",-1053470341),cljs.core.get_global_hierarchy.call(null));
+return (new cljs.core.MultiFn(cljs.core.symbol.call(null,"adzerk.boot-reload.client","handle"),((function (method_table__8044__auto__,prefer_table__8045__auto__,method_cache__8046__auto__,cached_hierarchy__8047__auto__,hierarchy__8048__auto__){
 return (function (msg,opts){
 return new cljs.core.Keyword(null,"type","type",1174270348).cljs$core$IFn$_invoke$arity$1(msg);
-});})(method_table__7335__auto__,prefer_table__7336__auto__,method_cache__7337__auto__,cached_hierarchy__7338__auto__,hierarchy__7339__auto__))
-,new cljs.core.Keyword(null,"default","default",-1987822328),hierarchy__7339__auto__,method_table__7335__auto__,prefer_table__7336__auto__,method_cache__7337__auto__,cached_hierarchy__7338__auto__));
+});})(method_table__8044__auto__,prefer_table__8045__auto__,method_cache__8046__auto__,cached_hierarchy__8047__auto__,hierarchy__8048__auto__))
+,new cljs.core.Keyword(null,"default","default",-1987822328),hierarchy__8048__auto__,method_table__8044__auto__,prefer_table__8045__auto__,method_cache__8046__auto__,cached_hierarchy__8047__auto__));
 })();
 }
-cljs.core._add_method.call(null,adzerk.boot_reload.client.handle,new cljs.core.Keyword(null,"reload","reload",863702807),(function (p__7943,opts){
-var map__7944 = p__7943;
-var map__7944__$1 = ((((!((map__7944 == null)))?((((map__7944.cljs$lang$protocol_mask$partition0$ & (64))) || (map__7944.cljs$core$ISeq$))?true:false):false))?cljs.core.apply.call(null,cljs.core.hash_map,map__7944):map__7944);
-var files = cljs.core.get.call(null,map__7944__$1,new cljs.core.Keyword(null,"files","files",-472457450));
+cljs.core._add_method.call(null,adzerk.boot_reload.client.handle,new cljs.core.Keyword(null,"reload","reload",863702807),(function (p__8747,opts){
+var map__8748 = p__8747;
+var map__8748__$1 = ((((!((map__8748 == null)))?((((map__8748.cljs$lang$protocol_mask$partition0$ & (64))) || ((cljs.core.PROTOCOL_SENTINEL === map__8748.cljs$core$ISeq$)))?true:false):false))?cljs.core.apply.call(null,cljs.core.hash_map,map__8748):map__8748);
+var files = cljs.core.get.call(null,map__8748__$1,new cljs.core.Keyword(null,"files","files",-472457450));
 return adzerk.boot_reload.reload.reload.call(null,files,opts);
 }));
 cljs.core._add_method.call(null,adzerk.boot_reload.client.handle,new cljs.core.Keyword(null,"visual","visual",942787224),(function (state,opts){
@@ -67,23 +70,23 @@ return null;
 }
 }));
 adzerk.boot_reload.client.connect = (function adzerk$boot_reload$client$connect(var_args){
-var args7946 = [];
-var len__7480__auto___7949 = arguments.length;
-var i__7481__auto___7950 = (0);
+var args8750 = [];
+var len__8224__auto___8753 = arguments.length;
+var i__8225__auto___8754 = (0);
 while(true){
-if((i__7481__auto___7950 < len__7480__auto___7949)){
-args7946.push((arguments[i__7481__auto___7950]));
+if((i__8225__auto___8754 < len__8224__auto___8753)){
+args8750.push((arguments[i__8225__auto___8754]));
 
-var G__7951 = (i__7481__auto___7950 + (1));
-i__7481__auto___7950 = G__7951;
+var G__8755 = (i__8225__auto___8754 + (1));
+i__8225__auto___8754 = G__8755;
 continue;
 } else {
 }
 break;
 }
 
-var G__7948 = args7946.length;
-switch (G__7948) {
+var G__8752 = args8750.length;
+switch (G__8752) {
 case 1:
 return adzerk.boot_reload.client.connect.cljs$core$IFn$_invoke$arity$1((arguments[(0)]));
 
@@ -93,7 +96,7 @@ return adzerk.boot_reload.client.connect.cljs$core$IFn$_invoke$arity$2((argument
 
 break;
 default:
-throw (new Error([cljs.core.str("Invalid arity: "),cljs.core.str(args7946.length)].join('')));
+throw (new Error([cljs.core.str.cljs$core$IFn$_invoke$arity$1("Invalid arity: "),cljs.core.str.cljs$core$IFn$_invoke$arity$1(args8750.length)].join('')));
 
 }
 });
@@ -103,7 +106,7 @@ return adzerk.boot_reload.client.connect.call(null,url,null);
 });
 
 adzerk.boot_reload.client.connect.cljs$core$IFn$_invoke$arity$2 = (function (url,opts){
-if((cljs.core.not.call(null,adzerk.boot_reload.connection.alive_QMARK_.call(null))) && (cljs.core.some_QMARK_.call(null,goog.dependencies_))){
+if((cljs.core.not.call(null,adzerk.boot_reload.connection.alive_QMARK_.call(null))) && (!((goog.dependencies_ == null)))){
 var conn = adzerk.boot_reload.websocket.websocket_connection.call(null);
 adzerk.boot_reload.client.patch_goog_base_BANG_.call(null);
 
@@ -143,5 +146,6 @@ return null;
 });
 
 adzerk.boot_reload.client.connect.cljs$lang$maxFixedArity = 2;
+
 
 //# sourceMappingURL=client.js.map
