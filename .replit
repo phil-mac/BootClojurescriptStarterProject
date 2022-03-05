@@ -1,0 +1,4 @@
+run = "boot serve -d target watch reload cljs target"
+
+[nix]
+channel = "stable-21_11"
