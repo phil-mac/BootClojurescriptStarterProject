@@ -10,3 +10,14 @@
 (require '[adzerk.boot-cljs :refer [cljs]]
          '[pandeiro.boot-http :refer [serve]]
          '[adzerk.boot-reload :refer [reload]]) ;; make reload visible
+
+;; define dev task as composition of subtasks
+(deftask dev
+  "Launch Development Environment"
+  []
+  (comp
+   (serve :dir "target")
+   (watch)
+   (reload)
+   (cljs)
+   (target :dir #{"target"})))

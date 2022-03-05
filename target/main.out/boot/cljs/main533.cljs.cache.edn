@@ -1,0 +1,2 @@
+;; Analyzed by ClojureScript 1.7.228
+{:name boot.cljs.main533, :doc nil, :excludes #{}, :use-macros nil, :require-macros nil, :uses nil, :requires {adzerk.boot-reload adzerk.boot-reload, modern.core modern.core}, :imports nil}

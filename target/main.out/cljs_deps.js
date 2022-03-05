@@ -11,4 +11,4 @@ goog.addDependency("../cljs/reader.js", ['cljs.reader'], ['goog.string', 'cljs.c
 goog.addDependency("../adzerk/boot_reload/client.js", ['adzerk.boot_reload.client'], ['adzerk.boot_reload.connection', 'adzerk.boot_reload.reload', 'adzerk.boot_reload.display', 'goog.net.jsloader', 'goog.Uri', 'cljs.core', 'adzerk.boot_reload.websocket', 'clojure.browser.net', 'cljs.reader', 'clojure.browser.event']);
 goog.addDependency("../adzerk/boot_reload.js", ['adzerk.boot_reload'], ['cljs.core', 'adzerk.boot_reload.client']);
 goog.addDependency("../modern/core.js", ['modern.core'], ['cljs.core']);
-goog.addDependency("../boot/cljs/main503.js", ['boot.cljs.main503'], ['adzerk.boot_reload', 'cljs.core', 'modern.core']);
+goog.addDependency("../boot/cljs/main533.js", ['boot.cljs.main533'], ['adzerk.boot_reload', 'cljs.core', 'modern.core']);
