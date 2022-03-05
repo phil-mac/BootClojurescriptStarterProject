@@ -1,4 +1,13 @@
 run = "boot dev"
 
+[env]
+CLJ_CONFIG = "/home/runner/.clojure"
+
+[languages.clojure]
+pattern = "**/*.cljs"
+
+[languages.clojure.languageServer]
+start = ["clojure-lsp"]
+
 [nix]
 channel = "stable-21_11"

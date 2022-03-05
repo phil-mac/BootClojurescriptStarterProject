@@ -5,8 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (do
-    (set! (.-textContent paragraph) "And this is from core.cljs!")
-    (.appendChild (.getElementById js/document "app") paragraph)))
+  (set! (.-textContent paragraph) "And this is from core.cljs!!!")
+  (.appendChild (.getElementById js/document "app") paragraph))
 
 (.addEventListener js/window "keydown" (fn [e] (.log js/console (.-key e))))
