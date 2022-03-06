@@ -24,7 +24,7 @@
   (comp
    (serve :dir "target")
    (watch)
-   (reload)
+   ;; (reload) ;; commented out, since this was starting on the repl port before the Jetty web server
    (cljs-repl :secure true)
    (cljs)
    (target :dir #{"target"})))
