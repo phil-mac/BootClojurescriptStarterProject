@@ -5,7 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris!!!")
+  (set! (.-textContent paragraph) "Clojurescript Tetris!!!!")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
@@ -25,7 +25,8 @@
 
 (defn new-block
   []
-  [4 13 14 15])
+  (let [coords [4 13 14 15]]
+    {:coords coords :prev-coords coords :color-id 1}))
 
 ;; --- utils ---
 
@@ -62,20 +63,22 @@
   (render-grid grid canvas))
 
 ;; --- update ---
-(defn update-grid
-  ; [0 0 0 0 0 0 0 1 1 1 0 0 ...]
-  ; and
-  ; (3 4 5 14)
-  ; => 
-  ; [0 0 0 1 1 1 0 1 1 1 0 0 ...]
-  [grid pb block]
-  ; Replace this nonsense with recursive solution
-  (let [cleared-grid (assoc (assoc (assoc (assoc grid (first pb) 0) (second pb) 0) (nth pb 2) 0) (nth pb 3) 0)]
-    (assoc (assoc (assoc (assoc cleared-grid (first block) 1) (second block) 1) (nth block 2) 1) (nth block 3) 1)))
+(defn apply-coords-to-grid
+  [grid coords value]
+  (if (empty? coords)
+      grid
+      (assoc (apply-coords-to-grid grid (rest coords) value) (first coords) value)))
+
+(defn apply-block-to-grid
+  [grid block]
+  (let [cleared-grid (apply-coords-to-grid grid (:prev-coords block) 0)]
+    (apply-coords-to-grid cleared-grid (:coords block) (:color-id block))))
 
 (defn step-block
   [block]
-  (into [] (map #(+ %1 10) block)))
+  {:coords (into [] (map #(+ %1 10) (:coords block))) 
+   :prev-coords (:coords block) 
+   :color-id (:color-id block)})
 
 (defn run-input-listener
   [grid block canvas step-timeout timestep]
@@ -83,27 +86,44 @@
         (js/setTimeout #(.removeEventListener js/window "keydown" input-listener) timestep)))
 
 (defn update-loop
-  [canvas grid pb block]
+  [canvas grid block]
   (.log js/console "update")
-  (let [updated-grid (update-grid grid pb block)
+  (let [updated-grid (apply-block-to-grid grid block)
         timestep 1000]
     (render-board updated-grid canvas)
     (let [step-timeout (js/setTimeout #(step canvas updated-grid block) timestep)]
       (run-input-listener updated-grid block canvas step-timeout timestep))))
 
+(defn check-new-block-coords
+  [grid block new-block-coords]
+  {:coords new-block-coords 
+   :prev-coords (:coords block) 
+   :color-id (:color-id block)})
+  ;; (if (valid)
+  ;;   (move)
+  ;;   (if (hit-bottom)
+  ;;     (place-it)
+  ;;     (reject-move))))
+
 (defn step
   [canvas grid block]
   (.log js/console "step")
-  (let [updated-block (step-block block)]
-    (update-loop canvas grid block updated-block)))
+  (update-loop canvas grid (step-block block)))
 
 ;; --- listen for input ---
 
+(def new-coords-fns
+  {:ArrowLeft  (fn [coords] (into [] (map #(- %1 1) coords)))
+   :ArrowRight (fn [coords] (into [] (map #(+ %1 1) coords)))})
+
 (defn handle-input
   [grid block canvas event]
-  (.log js/console (.-key event))
-  (let [updated-block (step-block block)]
-    (update-loop canvas grid block updated-block)))
+  ;; (.log js/console (.-key event))
+  (let [key-code (.-key event)
+        new-coords (((keyword key-code) new-coords-fns) (:coords block))
+        updated-block (check-new-block-coords grid block new-coords)]
+    ;; replace this with calling variation of "check new block coords", to be able to "place-it" if needed, not always update like this
+    (update-loop canvas grid updated-block)))
 
 (defn listen-for-input
   "if key pressed: clear prev step-timeout, handle input, add next input listener, call step, remove self"
@@ -122,6 +142,6 @@
   (let [canvas (new-canvas)
         grid (new-grid)
         block (new-block)]
-    (update-loop canvas grid block block)))
+    (update-loop canvas grid block)))
 
 (play-game)
