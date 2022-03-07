@@ -5,7 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris!!!!")
+  (set! (.-textContent paragraph) "Clojurescript Tetris")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
@@ -49,7 +49,7 @@
       (let [coords (index-to-coords index)]
         (if (= (nth grid index) 0)
           (set! (.-fillStyle ctx) "darkgrey")
-          (set! (.-fillStyle ctx) "plum"))
+          (set! (.-fillStyle ctx) "lime"))
         (let [cell-size (- (/ (.-width canvas) 10) 1)]
           (.fillRect 
            ctx 
@@ -120,7 +120,7 @@
   [grid block canvas event]
   ;; (.log js/console (.-key event))
   (let [key-code (.-key event)
-        new-coords (((keyword key-code) new-coords-fns) (:coords block))
+        new-coords ((get new-coords-fns (keyword key-code) (fn[coords] coords)) (:coords block))
         updated-block (check-new-block-coords grid block new-coords)]
     ;; replace this with calling variation of "check new block coords", to be able to "place-it" if needed, not always update like this
     (update-loop canvas grid updated-block)))
