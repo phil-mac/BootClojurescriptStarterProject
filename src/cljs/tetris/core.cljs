@@ -5,14 +5,14 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris")
+  (set! (.-textContent paragraph) "Clojurescript Tetris!!!")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
 
 (defn new-grid
   []
-  (take 0 (repeat 0)))
+  (into [] (take 200 (repeat 0))))
 
 (defn new-canvas
   []
@@ -22,6 +22,10 @@
         (set! (.-outline (.-style canvas)) "2px solid darkgrey")
         (set! (.-outlineOffset (.-style canvas)) "2px")
         (.appendChild (.getElementById js/document "app") canvas)))
+
+(defn new-block
+  []
+  [4 13 14 15])
 
 ;; --- utils ---
 
@@ -46,110 +50,78 @@
           (set! (.-fillStyle ctx) "darkgrey")
           (set! (.-fillStyle ctx) "plum"))
         (let [cell-size (- (/ (.-width canvas) 10) 1)]
-          (.fillRect ctx 
-                     (coord-to-position cell-size (:x coords)) 
-                     (coord-to-position cell-size (:y coords)) 
-                     cell-size 
-                     cell-size))))))
+          (.fillRect 
+           ctx 
+           (coord-to-position cell-size (:x coords)) 
+           (coord-to-position cell-size (:y coords)) 
+           cell-size 
+           cell-size))))))
   
 (defn render-board
   [grid canvas]
   (render-grid grid canvas))
 
 ;; --- update ---
+(defn update-grid
+  ; [0 0 0 0 0 0 0 1 1 1 0 0 ...]
+  ; and
+  ; (3 4 5 14)
+  ; => 
+  ; [0 0 0 1 1 1 0 1 1 1 0 0 ...]
+  [grid pb block]
+  ; Replace this nonsense with recursive solution
+  (let [cleared-grid (assoc (assoc (assoc (assoc grid (first pb) 0) (second pb) 0) (nth pb 2) 0) (nth pb 3) 0)]
+    (assoc (assoc (assoc (assoc cleared-grid (first block) 1) (second block) 1) (nth block 2) 1) (nth block 3) 1)))
+
+(defn step-block
+  [block]
+  (into [] (map #(+ %1 10) block)))
+
+(defn run-input-listener
+  [grid block canvas step-timeout timestep]
+  (let [input-listener (listen-for-input grid block canvas step-timeout)]
+        (js/setTimeout #(.removeEventListener js/window "keydown" input-listener) timestep)))
+
+(defn update-loop
+  [canvas grid pb block]
+  (.log js/console "update")
+  (let [updated-grid (update-grid grid pb block)
+        timestep 1000]
+    (render-board updated-grid canvas)
+    (let [step-timeout (js/setTimeout #(step canvas updated-grid block) timestep)]
+      (run-input-listener updated-grid block canvas step-timeout timestep))))
 
 (defn step
-  [grid canvas test-index]
+  [canvas grid block]
   (.log js/console "step")
-  (let [updated-test-index (+ test-index 1)
-        updated-grid (step-grid grid updated-test-index)]
-    ;; (listen-for-input updated-test-index)
-    (render-board updated-grid canvas)
-    (let [timeout (js/setTimeout #(step %1 %2 %3) 1000 updated-grid canvas updated-test-index)]
-      (let [input-fn (listen-for-input grid canvas test-index timeout)]
-        ;; (js/setTimeout #(.log js/console "remove input fn: " input-fn) 1000)
-        (js/setTimeout #(.removeEventListener js/window "keydown" input-fn) 1000))
-      ;; return "input-fn" from listen-for-input, then remove in a settimeout here...
-      ;; to ensure if you don't press anything there is never more than one listener
-      )))
-
-(defn step-grid
-  [grid test-index]
-  ;; (.log js/console "test index: " test-index)
-  (take test-index (repeat 0)))
+  (let [updated-block (step-block block)]
+    (update-loop canvas grid block updated-block)))
 
 ;; --- listen for input ---
 
+(defn handle-input
+  [grid block canvas event]
+  (.log js/console (.-key event))
+  (let [updated-block (step-block block)]
+    (update-loop canvas grid block updated-block)))
+
 (defn listen-for-input
-  "if key is pressed, incs index, clears the prev step timeout, removes itself (by using {:once true}), and calls step"
-  [grid canvas test-index timeout]
-  (let [input-fn (fn [e] 
-                   (do 
-                     (.log js/console (.-key e) test-index)
-                     (.clearTimeout js/window timeout)
-                     (let [updated-test-index (+ test-index 1)]
-                       (step grid canvas updated-test-index))))]
-    (.addEventListener js/window "keydown" input-fn (clj->js {:once true}))
-    input-fn))
+  "if key pressed: clear prev step-timeout, handle input, add next input listener, call step, remove self"
+  [grid block canvas step-timeout]
+  (let [input-listener 
+        (fn [event] 
+          (.clearTimeout js/window step-timeout)
+          (handle-input grid block canvas event))]
+    (.addEventListener js/window "keydown" input-listener (clj->js {:once true}))
+    input-listener))
 
 ;; --- main ---
 
 (defn play-game
   []
-  (let [grid (new-grid)
-        test-index 0
-        canvas (new-canvas)]
-    (step grid canvas test-index)
-    ;; (listen-for-input grid canvas)
-    (.log js/console "play game")))
+  (let [canvas (new-canvas)
+        grid (new-grid)
+        block (new-block)]
+    (update-loop canvas grid block block)))
 
 (play-game)
-
-
-
-;; make a an event listener function that when called removes itself adds another
-;; but it needs a reference to itself, which seems impossible? or not:
-;; https://stackoverflow.com/questions/4936324/javascript-remove-an-event-listener-from-within-that-listener
-
-;; (defn print-key
-;;   [i]
-;;   (fn [e] 
-;;     (.log js/console (.-key e) i)))
-
-;; (let [p1 (print-key 6)]
-;;   (.addEventListener js/window "keydown" p1 (clj->js {:once true})))
-
-
-;; (defn print-key-1
-;;   [e]
-;;   (.log js/console (.-key e) 1))
-
-;; (defn print-key-2
-;;   [e]
-;;   (.log js/console (.-key e) 2))
-
-;; (defn print-key-3
-;;   [e]
-;;   (.log js/console (.-key e) 3))
-
-;; (defn print-key
-;;   [i]
-;;   (fn [e] (.log js/console (.-key e) i)))
-
-;; (let [p1 (print-key 1)
-;;       p2 (print-key 2)
-;;       p3 (print-key 3)]
-;;   (.addEventListener js/window "keydown" p1)
-;;   (.addEventListener js/window "keydown" p2)
-;;   (.addEventListener js/window "keydown" p3)
-;;   (.removeEventListener js/window "keydown" p2))
-
-
-;; (defn print-key
-;;   [e i]
-;;   (fn [e i] (.log js/console (.-key e) i)))
-
-;; (let [listener1 (.addEventListener js/window "keydown" #(print-key %1 1))
-;;       listener2 (.addEventListener js/window "keydown" #(print-key %1 2))])
-
-

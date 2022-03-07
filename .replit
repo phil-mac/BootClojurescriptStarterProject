@@ -4,7 +4,7 @@ run = "boot dev"
 CLJ_CONFIG = "/home/runner/.clojure"
 
 [languages.clojure]
-pattern = "**/*.cljs"
+pattern = "**/*.clj*"
 
 [languages.clojure.languageServer]
 start = ["clojure-lsp"]
