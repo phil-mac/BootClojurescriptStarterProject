@@ -25,15 +25,27 @@
 
 (defn new-block
   []
-  (let [coords [4 13 14 15]]
-    {:coords coords :prev-coords coords :color-id 1}))
+  (let [indices [4 13 14 15]]
+    {:indices indices :prev-indices indices :color-id 1}))
 
 ;; --- utils ---
 
-(defn index-to-coords
+(defn index-to-coord
   [index]
   {:x (rem index 10) 
    :y (.floor js/Math (/ index 10))})
+
+(defn indices-to-coords
+  [indices]
+  (into [] (map index-to-coord indices)))
+
+(defn coord-to-index
+  [coord]
+  (+ (* (:y coord) 10) (:x coord)))
+
+(defn coords-to-indices
+  [coords]
+  (into [] (map coord-to-index coords)))
 
 ;; --- render ---
 
@@ -46,7 +58,7 @@
   [grid canvas]
   (let [ctx (.getContext canvas "2d")]
     (doseq [index (range 0 (count grid))]
-      (let [coords (index-to-coords index)]
+      (let [coords (index-to-coord index)]
         (if (= (nth grid index) 0)
           (set! (.-fillStyle ctx) "darkgrey")
           (set! (.-fillStyle ctx) "lime"))
@@ -63,22 +75,16 @@
   (render-grid grid canvas))
 
 ;; --- update ---
-(defn apply-coords-to-grid
-  [grid coords value]
-  (if (empty? coords)
+(defn apply-indices-to-grid
+  [grid indices value]
+  (if (empty? indices)
       grid
-      (assoc (apply-coords-to-grid grid (rest coords) value) (first coords) value)))
+      (assoc (apply-indices-to-grid grid (rest indices) value) (first indices) value)))
 
 (defn apply-block-to-grid
   [grid block]
-  (let [cleared-grid (apply-coords-to-grid grid (:prev-coords block) 0)]
-    (apply-coords-to-grid cleared-grid (:coords block) (:color-id block))))
-
-(defn step-block
-  [block]
-  {:coords (into [] (map #(+ %1 10) (:coords block))) 
-   :prev-coords (:coords block) 
-   :color-id (:color-id block)})
+  (let [cleared-grid (apply-indices-to-grid grid (:prev-indices block) 0)]
+    (apply-indices-to-grid cleared-grid (:indices block) (:color-id block))))
 
 (defn run-input-listener
   [grid block canvas step-timeout timestep]
@@ -94,36 +100,59 @@
     (let [step-timeout (js/setTimeout #(step canvas updated-grid block) timestep)]
       (run-input-listener updated-grid block canvas step-timeout timestep))))
 
+(defn valid?
+  [grid new-block-coords]
+  (let [x (:x (first new-block-coords))]
+    ; convert block index to coords
+    (.log js/console "x: " x " valid?: " (>= x 1))
+    (>= x 1))
+  ; get the actual xy coords from coords, confirm that none are out of bounds
+  )
+
+(defn hit-bottom?
+  [grid new-block-coords]
+  false)
+
+(defn update-block 
+  [block new-block-coords]
+  {:indices (coords-to-indices new-block-coords)
+     :prev-indices (:indices block) 
+     :color-id (:color-id block)})
+
 (defn check-new-block-coords
-  [grid block new-block-coords]
-  {:coords new-block-coords 
-   :prev-coords (:coords block) 
-   :color-id (:color-id block)})
-  ;; (if (valid)
-  ;;   (move)
-  ;;   (if (hit-bottom)
-  ;;     (place-it)
-  ;;     (reject-move))))
+  [canvas grid block new-block-coords]
+  (if (valid? grid new-block-coords)
+    (let [new-block (update-block block new-block-coords)]
+      (update-loop canvas grid new-block))
+    (if (hit-bottom? grid new-block-coords)
+      ;; (place-it)
+      (update-loop canvas grid block)
+      (update-loop canvas grid block))))
 
 (defn step
   [canvas grid block]
-  (.log js/console "step")
-  (update-loop canvas grid (step-block block)))
+  (let [new-coords (new-coords-from-input "ArrowDown" block)]
+    (check-new-block-coords canvas grid block new-coords)))
 
 ;; --- listen for input ---
 
 (def new-coords-fns
-  {:ArrowLeft  (fn [coords] (into [] (map #(- %1 1) coords)))
-   :ArrowRight (fn [coords] (into [] (map #(+ %1 1) coords)))})
+  ;; could maybe change this to return a partial, which gets used in new-coords-from-input
+  {:ArrowLeft  (fn [coords] (map (fn [coord] (update coord :x #(- %1 1))) coords))
+   :ArrowRight (fn [coords] (map (fn [coord] (update coord :x #(+ %1 1))) coords))
+   :ArrowDown (fn [coords] (map (fn [coord] (update coord :y #(+ %1 1))) coords))})
+
+(defn new-coords-from-input
+  [key-code block]
+  ((get new-coords-fns (keyword key-code) (fn[coords] coords))
+   (indices-to-coords (:indices block))))
 
 (defn handle-input
   [grid block canvas event]
-  ;; (.log js/console (.-key event))
   (let [key-code (.-key event)
-        new-coords ((get new-coords-fns (keyword key-code) (fn[coords] coords)) (:coords block))
-        updated-block (check-new-block-coords grid block new-coords)]
-    ;; replace this with calling variation of "check new block coords", to be able to "place-it" if needed, not always update like this
-    (update-loop canvas grid updated-block)))
+        new-coords (new-coords-from-input key-code block)]
+    (.log js/console "new-coords: " new-coords)
+    (check-new-block-coords canvas grid block new-coords)))
 
 (defn listen-for-input
   "if key pressed: clear prev step-timeout, handle input, add next input listener, call step, remove self"
