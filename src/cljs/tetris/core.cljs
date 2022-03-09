@@ -5,7 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris")
+  (set! (.-textContent paragraph) "Clojurescript Tetris!")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
@@ -102,12 +102,13 @@
 
 (defn valid?
   [grid new-block-coords]
-  (let [x (:x (first new-block-coords))]
-    ; convert block index to coords
-    (.log js/console "x: " x " valid?: " (>= x 1))
-    (>= x 1))
-  ; get the actual xy coords from coords, confirm that none are out of bounds
-  )
+  (not-any? 
+   #(let [x (:x %1)
+          y (:y %1)]
+      (or
+       (or (< x 0) (> x 9))
+       (or (< y 0) (> y 19)))) 
+   new-block-coords))
 
 (defn hit-bottom?
   [grid new-block-coords]
