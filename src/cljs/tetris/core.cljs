@@ -25,7 +25,7 @@
 
 (defn new-block
   []
-  (let [indices [4 13 14 15]]
+  (let [indices [4 12 13 14 15 16]]
     {:indices indices :prev-indices indices :color-id 1}))
 
 ;; --- utils ---
@@ -101,18 +101,18 @@
       (run-input-listener updated-grid block canvas step-timeout timestep))))
 
 (defn valid?
-  [grid new-block-coords]
+  [grid block new-block-coords]
   (not-any? 
    #(let [x (:x %1)
-          y (:y %1)]
+          y (:y %1)
+          index (coord-to-index %1)
+          is-grid-index-available (and (< index 200) (> (nth grid index) 0))
+          is-current-block-index (some (fn [i] (= i index)) (:indices block))]
       (or
        (or (< x 0) (> x 9))
-       (or (< y 0) (> y 19)))) 
+       (or (< y 0) (> y 19))
+       (and (not is-current-block-index) is-grid-index-available))) 
    new-block-coords))
-
-(defn hit-bottom?
-  [grid new-block-coords]
-  false)
 
 (defn update-block 
   [block new-block-coords]
@@ -120,20 +120,56 @@
      :prev-indices (:indices block) 
      :color-id (:color-id block)})
 
+(defn check-for-completed-rows
+  ([grid] (check-for-completed-rows grid 0 []))
+  ([grid row completed-rows]
+   (if (empty? grid)
+     completed-rows
+     (let [is-row-complete (not-any? #(= % 0) (take 10 grid))
+           completed-rows (if is-row-complete (conj completed-rows row) completed-row)]
+       (check-for-completed-rows (drop 10 grid) (inc row) completed-rows)))))
+
+(defn drop-rows-above
+  [canvas grid completed-rows]
+    ;; move rows above down, then call this on a timeout:
+    (update-loop canvas grid (new-block)))
+
+(defn clear-completed-rows
+  ([canvas grid completed-rows]
+   (clear-completed-rows canvas grid completed-rows 0))
+  ([canvas grid completed-rows column-pair]
+   (if (= column-pair 5)
+     (drop-rows-above canvas grid completed-rows)
+     ;; TODO NEXT: make this apply 0 to grid to each column-pair for each completed row:
+     (let [grid-with-cleared-column (apply-indices-to-grid grid [(coord-to-index {:x 2 :y 19}) 196] 0)]
+       (clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair))))))
+
+(defn place-block
+  [canvas grid block]
+  (let [completed-rows (check-for-completed-rows grid)]
+    (if (empty? completed-rows)
+      (do 
+        (.log js/console "no completed rows")
+        (update-loop canvas grid (new-block))
+        )
+      (do
+        (.log js/console "COMPLETED ROWS")
+        (clear-completed-rows canvas grid completed-rows)
+        ))))
+
 (defn check-new-block-coords
-  [canvas grid block new-block-coords]
-  (if (valid? grid new-block-coords)
+  [canvas grid block new-block-coords is-moving-down]
+  (if (valid? grid block new-block-coords)
     (let [new-block (update-block block new-block-coords)]
       (update-loop canvas grid new-block))
-    (if (hit-bottom? grid new-block-coords)
-      ;; (place-it)
-      (update-loop canvas grid block)
+    (if is-moving-down
+      (place-block canvas grid block)
       (update-loop canvas grid block))))
 
 (defn step
   [canvas grid block]
   (let [new-coords (new-coords-from-input "ArrowDown" block)]
-    (check-new-block-coords canvas grid block new-coords)))
+    (check-new-block-coords canvas grid block new-coords true)))
 
 ;; --- listen for input ---
 
@@ -153,7 +189,7 @@
   (let [key-code (.-key event)
         new-coords (new-coords-from-input key-code block)]
     (.log js/console "new-coords: " new-coords)
-    (check-new-block-coords canvas grid block new-coords)))
+    (check-new-block-coords canvas grid block new-coords (= key-code "ArrowDown"))))
 
 (defn listen-for-input
   "if key pressed: clear prev step-timeout, handle input, add next input listener, call step, remove self"
