@@ -5,7 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris!")
+  (set! (.-textContent paragraph) "Clojurescript Tetris")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
@@ -25,7 +25,7 @@
 
 (defn new-block
   []
-  (let [indices [4 12 13 14 15 16]]
+  (let [indices [4 12 13 14 15 16 22 23 24 25 26]]
     {:indices indices :prev-indices indices :color-id 1}))
 
 ;; --- utils ---
@@ -139,10 +139,19 @@
    (clear-completed-rows canvas grid completed-rows 0))
   ([canvas grid completed-rows column-pair]
    (if (= column-pair 5)
-     (drop-rows-above canvas grid completed-rows)
-     ;; TODO NEXT: make this apply 0 to grid to each column-pair for each completed row:
-     (let [grid-with-cleared-column (apply-indices-to-grid grid [(coord-to-index {:x 2 :y 19}) 196] 0)]
-       (clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair))))))
+     (js/setTimeout #(drop-rows-above canvas grid completed-rows) 1000)
+     (do
+       (let [grid-with-cleared-column 
+             (reduce (fn [grid row]
+                       (apply-indices-to-grid 
+                        grid 
+                        [(coord-to-index {:x (- 4 column-pair) :y row}) (coord-to-index {:x (+ 5 column-pair) :y row})] 
+                        0))
+                     grid
+                     completed-rows)]
+         (render-board grid-with-cleared-column canvas)
+         (js/setTimeout #(clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair)) 200)
+         )))))
 
 (defn place-block
   [canvas grid block]
