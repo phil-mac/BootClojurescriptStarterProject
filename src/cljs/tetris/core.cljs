@@ -5,7 +5,7 @@
 (println "Hello, World.")
 
 (let [paragraph (.createElement js/document "h2")]
-  (set! (.-textContent paragraph) "Clojurescript Tetris")
+  (set! (.-textContent paragraph) "Clojurescript Tetris!")
   (.appendChild (.getElementById js/document "app") paragraph))
 
 ;; --- setup ---
@@ -126,32 +126,39 @@
    (if (empty? grid)
      completed-rows
      (let [is-row-complete (not-any? #(= % 0) (take 10 grid))
-           completed-rows (if is-row-complete (conj completed-rows row) completed-row)]
+           completed-rows (if is-row-complete (conj completed-rows row) completed-rows)]
        (check-for-completed-rows (drop 10 grid) (inc row) completed-rows)))))
 
 (defn drop-rows-above
   [canvas grid completed-rows]
     ;; move rows above down, then call this on a timeout:
-    (update-loop canvas grid (new-block)))
+  (if (empty? completed-rows)
+    (do
+      (render-board grid canvas)
+      (js/setTimeout #(update-loop canvas grid (new-block)) 1000))
+    (drop-rows-above 
+     canvas 
+     (let [row (first completed-rows)]
+      (into [] (concat (take 10 (repeat 0)) (concat (subvec grid 0 (* row 10)) (subvec grid (+ (* row 10) 10)))))) 
+     (rest completed-rows))))
 
 (defn clear-completed-rows
   ([canvas grid completed-rows]
    (clear-completed-rows canvas grid completed-rows 0))
   ([canvas grid completed-rows column-pair]
    (if (= column-pair 5)
-     (js/setTimeout #(drop-rows-above canvas grid completed-rows) 1000)
-     (do
-       (let [grid-with-cleared-column 
-             (reduce (fn [grid row]
-                       (apply-indices-to-grid 
-                        grid 
-                        [(coord-to-index {:x (- 4 column-pair) :y row}) (coord-to-index {:x (+ 5 column-pair) :y row})] 
-                        0))
-                     grid
-                     completed-rows)]
-         (render-board grid-with-cleared-column canvas)
-         (js/setTimeout #(clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair)) 200)
-         )))))
+     (drop-rows-above canvas grid completed-rows)
+     (let [grid-with-cleared-column 
+           (reduce (fn [grid row]
+                     (apply-indices-to-grid 
+                      grid 
+                      [(coord-to-index {:x (- 4 column-pair) :y row}) (coord-to-index {:x (+ 5 column-pair) :y row})] 
+                      0))
+                   grid
+                   completed-rows)]
+       (render-board grid-with-cleared-column canvas)
+       (js/setTimeout #(clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair)) 200)
+       ))))
 
 (defn place-block
   [canvas grid block]
@@ -197,7 +204,6 @@
   [grid block canvas event]
   (let [key-code (.-key event)
         new-coords (new-coords-from-input key-code block)]
-    (.log js/console "new-coords: " new-coords)
     (check-new-block-coords canvas grid block new-coords (= key-code "ArrowDown"))))
 
 (defn listen-for-input
