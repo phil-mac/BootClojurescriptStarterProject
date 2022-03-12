@@ -31,10 +31,20 @@
   []
   (into [] (take 200 (repeat 0))))
 
+(def blocks
+  {:t {:indices [14 4 13 15] :color-id 1}
+   :j {:indices [14 3 13 15] :color-id 2}
+   :z {:indices [4 3 14 15] :color-id 3}
+   :o {:indices [4 5 14 15] :color-id 1}
+   :s {:indices [4 5 13 14] :color-id 2}
+   :l {:indices [14 5 13 15] :color-id 3}
+   :i {:indices [4 3 5 6] :color-id 1}})
+
 (defn new-block
   []
-  (let [indices [4 12 13 14 15 16 22 23 24 25 26]]
-    {:indices indices :prev-indices indices :color-id 1}))
+  (let [block (get blocks (rand-nth (keys blocks)))
+        indices (:indices block)]
+    {:indices indices :prev-indices indices :color-id (:color-id block)}))
 
 ;; --- utils ---
 
@@ -68,9 +78,13 @@
         ctx (.getContext canvas "2d")]
     (doseq [index (range 0 (count grid))]
       (let [coords (index-to-coord index)]
-        (if (= (nth grid index) 0)
-          (set! (.-fillStyle ctx) "darkgrey")
-          (set! (.-fillStyle ctx) "lime"))
+        (if (= (nth grid index) 1)
+          (set! (.-fillStyle ctx) "lime")
+          (if (= (nth grid index) 2)
+            (set! (.-fillStyle ctx) "blue")
+            (if (= (nth grid index) 3)
+              (set! (.-fillStyle ctx) "red")
+              (set! (.-fillStyle ctx) "darkgrey"))))
         (let [cell-size (- (/ (.-width canvas) 10) 1)]
           (.fillRect 
            ctx 
@@ -213,7 +227,21 @@
   ;; could maybe change this to return a partial, which gets used in new-coords-from-input
   {:ArrowLeft  (fn [coords] (map (fn [coord] (update coord :x #(- %1 1))) coords))
    :ArrowRight (fn [coords] (map (fn [coord] (update coord :x #(+ %1 1))) coords))
-   :ArrowDown (fn [coords] (map (fn [coord] (update coord :y #(+ %1 1))) coords))})
+   :ArrowDown (fn [coords] (map (fn [coord] (update coord :y #(+ %1 1))) coords))
+   :x (fn [coords] 
+        (let [x-pivot (:x (first coords)) ; first coord is the one to pivot about 
+              y-pivot (:y (first coords))]
+          (map (fn [coord] (let [x-delta (- (:x coord) x-pivot)
+                                 y-delta (- (:y coord) y-pivot)]
+                             {:x (- x-pivot y-delta) :y (+ y-pivot x-delta)}))
+               coords)))
+   :z (fn [coords] 
+        (let [x-pivot (:x (first coords)) ; first coord is the one to pivot about 
+              y-pivot (:y (first coords))]
+          (map (fn [coord] (let [x-delta (- (:x coord) x-pivot)
+                                 y-delta (- (:y coord) y-pivot)]
+                             {:x (+ x-pivot y-delta) :y (- y-pivot x-delta)}))
+               coords)))})
 
 (defn new-coords-from-input
   [key-code block]
