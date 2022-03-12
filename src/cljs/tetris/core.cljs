@@ -10,18 +10,26 @@
 
 ;; --- setup ---
 
-(defn new-grid
+(defn add-ui
   []
-  (into [] (take 200 (repeat 0))))
+  (let [lines-ui (.createElement js/document "h3")]
+    (set! (.-id lines-ui) "lines")
+    (set! (.-textContent lines-ui) "LINES - 000")
+    (.appendChild (.getElementById js/document "app") lines-ui)))
 
-(defn new-canvas
+(defn add-canvas
   []
   (let [canvas (.createElement js/document "canvas")] 
+        (set! (.-id canvas) "board")
         (set! (.-width canvas) 210)
         (set! (.-height canvas) 420)
         (set! (.-outline (.-style canvas)) "2px solid darkgrey")
         (set! (.-outlineOffset (.-style canvas)) "2px")
         (.appendChild (.getElementById js/document "app") canvas)))
+
+(defn new-grid
+  []
+  (into [] (take 200 (repeat 0))))
 
 (defn new-block
   []
@@ -55,8 +63,9 @@
 
 (defn render-grid
   "applies grid to canvas"
-  [grid canvas]
-  (let [ctx (.getContext canvas "2d")]
+  [grid]
+  (let [canvas (.getElementById js/document "board")
+        ctx (.getContext canvas "2d")]
     (doseq [index (range 0 (count grid))]
       (let [coords (index-to-coord index)]
         (if (= (nth grid index) 0)
@@ -69,10 +78,24 @@
            (coord-to-position cell-size (:y coords)) 
            cell-size 
            cell-size))))))
+
+(defn format-line-count
+  [line-count]
+  (if (< line-count 10)
+    (str "00" line-count)
+    (if (< line-count 100)
+      (str "0" line-count)
+      (str line-count))))
+
+(defn render-stats
+  [stats]
+  (let [lines-ui (.getElementById js/document "lines")]
+    (set! (.-textContent lines-ui) (str "LINES-" (format-line-count (:lines stats))))))
   
 (defn render-board
-  [grid canvas]
-  (render-grid grid canvas))
+  [grid stats]
+  (render-stats stats)
+  (render-grid grid))
 
 ;; --- update ---
 (defn apply-indices-to-grid
@@ -87,18 +110,18 @@
     (apply-indices-to-grid cleared-grid (:indices block) (:color-id block))))
 
 (defn run-input-listener
-  [grid block canvas step-timeout timestep]
-  (let [input-listener (listen-for-input grid block canvas step-timeout)]
+  [grid block stats step-timeout timestep]
+  (let [input-listener (listen-for-input grid block stats step-timeout)]
         (js/setTimeout #(.removeEventListener js/window "keydown" input-listener) timestep)))
 
 (defn update-loop
-  [canvas grid block]
+  [grid block stats]
   (.log js/console "update")
   (let [updated-grid (apply-block-to-grid grid block)
         timestep 1000]
-    (render-board updated-grid canvas)
-    (let [step-timeout (js/setTimeout #(step canvas updated-grid block) timestep)]
-      (run-input-listener updated-grid block canvas step-timeout timestep))))
+    (render-board updated-grid stats)
+    (let [step-timeout (js/setTimeout #(step updated-grid block stats) timestep)]
+      (run-input-listener updated-grid block stats step-timeout timestep))))
 
 (defn valid?
   [grid block new-block-coords]
@@ -130,24 +153,23 @@
        (check-for-completed-rows (drop 10 grid) (inc row) completed-rows)))))
 
 (defn drop-rows-above
-  [canvas grid completed-rows]
-    ;; move rows above down, then call this on a timeout:
+  [grid stats completed-rows]
   (if (empty? completed-rows)
     (do
-      (render-board grid canvas)
-      (js/setTimeout #(update-loop canvas grid (new-block)) 1000))
+      (render-board grid stats)
+      (js/setTimeout #(update-loop grid (new-block) stats) 1000))
     (drop-rows-above 
-     canvas 
      (let [row (first completed-rows)]
       (into [] (concat (take 10 (repeat 0)) (concat (subvec grid 0 (* row 10)) (subvec grid (+ (* row 10) 10)))))) 
+     {:lines (inc (:lines stats))}
      (rest completed-rows))))
 
 (defn clear-completed-rows
-  ([canvas grid completed-rows]
-   (clear-completed-rows canvas grid completed-rows 0))
-  ([canvas grid completed-rows column-pair]
+  ([grid stats completed-rows]
+   (clear-completed-rows grid stats completed-rows 0))
+  ([grid stats completed-rows column-pair]
    (if (= column-pair 5)
-     (drop-rows-above canvas grid completed-rows)
+     (drop-rows-above grid stats completed-rows)
      (let [grid-with-cleared-column 
            (reduce (fn [grid row]
                      (apply-indices-to-grid 
@@ -156,36 +178,34 @@
                       0))
                    grid
                    completed-rows)]
-       (render-board grid-with-cleared-column canvas)
-       (js/setTimeout #(clear-completed-rows canvas grid-with-cleared-column completed-rows (inc column-pair)) 200)
-       ))))
+       (render-board grid-with-cleared-column stats)
+       (js/setTimeout #(clear-completed-rows grid-with-cleared-column stats completed-rows (inc column-pair)) 200)))))
 
 (defn place-block
-  [canvas grid block]
+  [grid stats]
   (let [completed-rows (check-for-completed-rows grid)]
     (if (empty? completed-rows)
       (do 
         (.log js/console "no completed rows")
-        (update-loop canvas grid (new-block))
+        (update-loop grid (new-block) stats)
         )
       (do
         (.log js/console "COMPLETED ROWS")
-        (clear-completed-rows canvas grid completed-rows)
-        ))))
+        (clear-completed-rows grid stats completed-rows)))))
 
 (defn check-new-block-coords
-  [canvas grid block new-block-coords is-moving-down]
+  [grid block stats new-block-coords is-moving-down]
   (if (valid? grid block new-block-coords)
     (let [new-block (update-block block new-block-coords)]
-      (update-loop canvas grid new-block))
+      (update-loop grid new-block stats))
     (if is-moving-down
-      (place-block canvas grid block)
-      (update-loop canvas grid block))))
+      (place-block grid stats)
+      (update-loop grid block stats))))
 
 (defn step
-  [canvas grid block]
+  [grid block stats]
   (let [new-coords (new-coords-from-input "ArrowDown" block)]
-    (check-new-block-coords canvas grid block new-coords true)))
+    (check-new-block-coords grid block stats new-coords true)))
 
 ;; --- listen for input ---
 
@@ -201,18 +221,18 @@
    (indices-to-coords (:indices block))))
 
 (defn handle-input
-  [grid block canvas event]
+  [grid block stats event]
   (let [key-code (.-key event)
         new-coords (new-coords-from-input key-code block)]
-    (check-new-block-coords canvas grid block new-coords (= key-code "ArrowDown"))))
+    (check-new-block-coords grid block stats new-coords (= key-code "ArrowDown"))))
 
 (defn listen-for-input
   "if key pressed: clear prev step-timeout, handle input, add next input listener, call step, remove self"
-  [grid block canvas step-timeout]
+  [grid block stats step-timeout]
   (let [input-listener 
         (fn [event] 
           (.clearTimeout js/window step-timeout)
-          (handle-input grid block canvas event))]
+          (handle-input grid block stats event))]
     (.addEventListener js/window "keydown" input-listener (clj->js {:once true}))
     input-listener))
 
@@ -220,9 +240,11 @@
 
 (defn play-game
   []
-  (let [canvas (new-canvas)
+  (add-ui)
+  (add-canvas)
+  (let [stats {:lines 0}
         grid (new-grid)
         block (new-block)]
-    (update-loop canvas grid block)))
+    (update-loop grid block stats)))
 
 (play-game)
